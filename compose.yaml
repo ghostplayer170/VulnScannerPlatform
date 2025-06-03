@@ -1,0 +1,64 @@
+services:
+  sonarqube:
+    image: sonarqube:9.9-community
+    container_name: sonarqube
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+    networks:
+      - appnet
+
+  mongo:
+    image: mongo:6
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - mongo_data:/data/db
+      - mongo_config:/data/configdb
+    networks:
+      - appnet
+
+  js-backend:
+    build:
+      context: ./backend
+    container_name: js-backend
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      - sonarqube
+      - mongo
+    env_file:
+      - ./backend/.env
+    networks:
+      - appnet
+
+  js-frontend:
+    build: ./frontend
+    container_name: js-frontend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - js-backend
+    networks:
+      - appnet
+
+volumes:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:
+  mongo_data:
+  mongo_config:
+
+networks:
+  appnet:
+    driver: bridge

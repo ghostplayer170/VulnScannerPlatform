@@ -1,0 +1,81 @@
+# Node.js dependencies
+node_modules/
+
+# Dependency debug logs
+npm-debug.log*
+yarn-debug.log*
+
+# IDE/editor settings
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Build outputs and temporary files
+dist/
+build/
+out/
+tmp/
+temp/
+*.tmp
+
+# Test and coverage artifacts
+test/
+tests/
+coverage/
+*.log
+
+# Version control
+.git/
+.svn/
+.hg/
+
+# Environment and secrets
+.env*
+*.env
+*.pem
+*.key
+*.crt
+config.local.*
+*.local.yml
+
+# Documentation and markdown
+README*
+*.md
+docs/
+
+# Docker and Compose files
+Dockerfile*
+docker-compose*
+
+# Project-specific
+local/
+.local/
+
+# Ignore backend and frontend node_modules specifically (in case of context)
+backend/node_modules/
+frontend/node_modules/
+
+# Ignore backend and frontend .env files
+backend/.env
+frontend/.env
+
+# Ignore backend and frontend .git directories
+backend/.git/
+frontend/.git/
+
+# Ignore backend and frontend .gitignore files
+backend/.gitignore
+frontend/.gitignore
+
+# Ignore backend and frontend temp directories
+backend/src/temp/
+frontend/src/temp/
+
+# Ignore setup scripts and PowerShell scripts
+*.ps1
+
+# Ignore configuration backups
+*.conf~
+
+# End of .dockerignore
