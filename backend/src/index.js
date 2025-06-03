@@ -44,16 +44,16 @@ app.get('/sonarqube/status', async (req, res) => {
 // Endpoint para listar proyectos existentes
 app.get('/sonarqube/projects', async (req, res) => {
   try {
-    
     const response = await axios.get(`${SONARQUBE_URL}/api/projects/search`, {
-      headers: { 'Authorization': `Bearer ${SONARQUBE_TOKEN}` },    
+      headers: { 'Authorization': `Bearer ${SONARQUBE_TOKEN}` }
     });
-
+    res.json(response.data.components || []); // <‑ Falta esta respuesta
   } catch (error) {
     console.error('Error obteniendo proyectos:', error.message);
     res.status(500).json({ error: error.message });
   }
 });
+
 
 // Endpoint para recibir y analizar el código
 app.post('/analyze', async (req, res) => {
