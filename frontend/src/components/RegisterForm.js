@@ -17,8 +17,6 @@ function LoginRegisterForm({ onLogin }) {
         try {
             console.log(`Enviando solicitud de ${isLogin ? 'inicio de sesión' : 'registro'} a ${BASE_URL}/auth/${endpoint}`);
             const res = await fetch(`${BASE_URL}/auth/${endpoint}`, {
-            console.log(`Enviando solicitud de ${isLogin ? 'inicio de sesión' : 'registro'} a ${BASE_URL}/auth/${endpoint}`);
-            const res = await fetch(`${BASE_URL}/auth/${endpoint}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
