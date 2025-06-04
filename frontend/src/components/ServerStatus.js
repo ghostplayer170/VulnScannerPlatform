@@ -3,7 +3,9 @@ function ServerStatus({ status }) {
     status && (
       <div className={`server-status ${status.status}`}>
         <span className="status-indicator"></span>
-        {status.status === 'available' ? 'SonarQube conectado' : 'SonarQube no disponible'}
+        <span className="status-text">
+          SonarQube está {status.status === 'available' ? 'disponible' : 'no disponible'}
+        </span>
       </div>
     )
   );

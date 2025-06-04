@@ -31,6 +31,33 @@ function App() {
     }
   }, [token]);
 
+  useEffect(() => {
+    if (!token) return;
+
+    let timeoutId;
+
+    const refreshStatus = async () => {
+      try {
+        const statusData = await checkServerStatus();
+        setServerStatus(statusData);
+
+        // Define el intervalo según el estado
+        const delay = statusData.status === 'available' ? 5 * 60 * 1000 : 30 * 1000;
+
+        // Programa la próxima verificación
+        timeoutId = setTimeout(refreshStatus, delay);
+      } catch (err) {
+        console.error('Error al actualizar estado del servidor:', err);
+        timeoutId = setTimeout(refreshStatus, 30 * 1000); // fallback
+      }
+    };
+
+    refreshStatus();
+
+    // Limpia el temporizador al desmontar el componente
+    return () => clearTimeout(timeoutId);
+  }, [token]);
+
   if (!token) {
     return <LoginForm onLogin={handleLogin} />;
   }

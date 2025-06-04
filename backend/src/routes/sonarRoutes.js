@@ -1,13 +1,27 @@
 const express = require('express');
+const axios = require('axios');
 const User = require('../models/User');
 const { getProjectMetrics } = require('../services/sonarService');
-const verifyToken = require('../middleware/authMiddleware'); // Middleware JWT
-const router = express.Router();
+const verifyToken = require('../middleware/authMiddleware');
 const Project = require('../models/Project');
 
-router.use(verifyToken); // Verifica JWT y agrega req.userId
+const router = express.Router();
+router.use(verifyToken);
 
-router.post('/projects', verifyToken, async (req, res) => {
+
+// Rutas públicas
+router.get('/status', async (req, res) => {
+  try {
+    const response = await axios.get(`${process.env.SONARQUBE_URL}/api/system/status`);
+    res.json(response.data);
+  } catch (err) {
+    console.error('Error obteniendo estado de SonarQube:', err);
+    res.status(500).json({ error: 'No se pudo obtener el estado de SonarQube' });
+  }
+});
+
+// Rutas protegidas
+router.post('/projects', async (req, res) => {
   const { name } = req.body;
   const userId = req.userId;
 

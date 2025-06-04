@@ -2,8 +2,9 @@ const express = require('express');
 const router = express.Router();
 const Project = require('../models/Project');
 const { createSonarProject } = require('../services/sonarService');
-const verifyToken = require('../middlewares/authMiddleware');
+const verifyToken = require('../middleware/authMiddleware');
 
+// Middleware para verificar el token de autenticación
 router.use(verifyToken);
 
 /**
