@@ -1,4 +1,4 @@
-const BASE_URL = process.env.REACT_APP_BACKEND_URL;
+export const BASE_URL = process.env.REACT_APP_BACKEND_URL || '/api';
 
 export async function checkServerStatus() {
   const res = await fetch(`${BASE_URL}/sonarqube/status`);
