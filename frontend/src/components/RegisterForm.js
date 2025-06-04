@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { BASE_URL } from '../services/api';
 
 function LoginRegisterForm({ onLogin }) {
     const [isLogin, setIsLogin] = useState(true);
@@ -13,8 +14,8 @@ function LoginRegisterForm({ onLogin }) {
         const endpoint = isLogin ? 'login' : 'register';
 
         try {
-            console.log(`Enviando solicitud de ${isLogin ? 'inicio de sesión' : 'registro'} a ${process.env.REACT_APP_BACKEND_URL}/auth/${endpoint}`);
-            const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/auth/${endpoint}`, {
+            console.log(`Enviando solicitud de ${isLogin ? 'inicio de sesión' : 'registro'} a ${BASE_URL}/auth/${endpoint}`);
+            const res = await fetch(`${BASE_URL}/auth/${endpoint}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })

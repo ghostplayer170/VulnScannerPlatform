@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import RegisterForm from './RegisterForm';
+import { BASE_URL } from '../services/api';
 
 function LoginForm({ onLogin }) {
     const [email, setEmail] = useState('');
@@ -12,7 +13,7 @@ function LoginForm({ onLogin }) {
         setError(null);
 
         try {
-            const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/auth/login`, {
+            const res = await fetch(`${BASE_URL}/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
