@@ -4,7 +4,7 @@ import CodeEditor from './components/CodeEditor';
 import ConfigPanel from './components/ConfigPanel';
 import AnalysisResults from './components/AnalysisResults';
 import ServerStatus from './components/ServerStatus';
-import { checkServerStatus, fetchExistingProjects, sendAnalysisRequest } from './services/api';
+import { checkServerStatus, fetchExistingProjects, sendAnalysisRequest, validateToken } from './services/api';
 import LoginForm from './components/LoginForm';
 import './styles/App.css';
 
@@ -18,6 +18,25 @@ function App() {
   const [serverStatus, setServerStatus] = useState(null);
   const [existingProjects, setExistingProjects] = useState([]);
   const [token, setToken] = useState(localStorage.getItem('token') || '');
+
+  // Si no hay token, redirige al usuario a la página de inicio de sesión
+  useEffect(() => {
+    const checkToken = async () => {
+      try {
+        await validateToken(); // Llama al backend para validar el token
+        checkServerStatus().then(setServerStatus);
+        fetchExistingProjects().then(setExistingProjects);
+      } catch (err) {
+        console.error('Token inválido o expirado:', err);
+        localStorage.removeItem('token');
+        setToken('');
+      }
+    };
+
+    if (token) {
+      checkToken();
+    }
+  }, [token]);
 
   const handleLogin = (jwtToken) => {
     localStorage.setItem('token', jwtToken);

@@ -14,15 +14,40 @@ export async function checkServerStatus() {
 }
 
 export async function fetchExistingProjects() {
-  const res = await fetch(`${BASE_URL}/sonarqube/projects`, {
+  const res = await fetch(`${BASE_URL}/projects`, {
     headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }
   });
+  const data = await res.json(); 
+  return data.projects || [];
+}
+
+export async function createProject({ projectName }) {
+  const res = await fetch(`${BASE_URL}/projects`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders()
+    },
+    body: JSON.stringify({ name: projectName })
+  });
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error || 'Error al crear el proyecto');
+  }
   const data = await res.json();
-  return data.components || [];
+  return data.project;
 }
 
 export async function sendAnalysisRequest({ code, projectKey, projectName, language }) {
-  const res = await fetch(`${BASE_URL}/analyze`, {
+
+  // Crear proyecto si no existe
+  const existingProjects = await fetchExistingProjects();
+  if (!existingProjects.some(p => p.key === projectKey)) {
+    await createProject({ projectName });
+  }
+
+  // Enviar solicitud de análisis
+  const res = await fetch(`${BASE_URL}/sonarqube/analyze`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     ...getAuthHeaders(),
@@ -31,3 +56,11 @@ export async function sendAnalysisRequest({ code, projectKey, projectName, langu
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return await res.json();
 }
+
+export const validateToken = async () => {
+  const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/auth/validate`, {
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }
+  });
+  if (!res.ok) throw new Error('Token inválido');
+  return res.json();
+};

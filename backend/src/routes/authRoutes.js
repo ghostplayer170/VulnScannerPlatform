@@ -3,7 +3,9 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const router = express.Router();
+const verifyToken = require('../middleware/authMiddleware');
 const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_EXPIRATION = process.env.JWT_EXPIRATION || '1h';
 
 router.post('/register', async (req, res) => {
   try {
@@ -31,12 +33,18 @@ router.post('/login', async (req, res) => {
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) return res.status(401).json({ error: 'Contraseña incorrecta' });
 
-    const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: JWT_EXPIRATION });
     res.status(200).json({ message: 'Login exitoso', token });
   } catch (err) {
     console.error('Error en login:', err);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
+
+// authRoutes.js
+router.get('/validate', verifyToken, (req, res) => {
+  res.status(200).json({ valid: true });
+});
+
 
 module.exports = router;

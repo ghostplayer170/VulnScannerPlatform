@@ -19,19 +19,16 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: 'El nombre del proyecto es obligatorio' });
   }
 
-  const projectKey = `project_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+  const projectKey = `project_${userId}_${name.replace(/\s+/g, '_')}_${Date.now()}`;
 
   try {
     // Crea el proyecto en SonarQube
-    await createSonarProject(projectKey, name);
-
-    // Guarda en MongoDB
-    const newProject = new Project({
-      userId,
-      projectKey,
-      name
-    });
-
+    const sonarResponse = await createSonarProject(projectKey, name);
+    
+    if (sonarResponse.status !== 'success') {
+      return res.status(500).json({ error: sonarResponse.message });
+    }
+    const newProject = new Project({ userId, projectKey, name });
     await newProject.save();
 
     res.status(201).json({ message: 'Proyecto creado correctamente', project: newProject });
@@ -41,6 +38,7 @@ router.post('/', async (req, res) => {
   }
 });
 
+
 /**
  * GET /projects
  * Devuelve todos los proyectos del usuario autenticado
@@ -48,7 +46,7 @@ router.post('/', async (req, res) => {
 router.get('/', async (req, res) => {
   try {
     const projects = await Project.find({ userId: req.userId }).sort({ createdAt: -1 });
-    res.json({ projects });
+    res.json({ projects: projects });
   } catch (err) {
     console.error('Error al obtener proyectos:', err);
     res.status(500).json({ error: 'Error al recuperar los proyectos' });

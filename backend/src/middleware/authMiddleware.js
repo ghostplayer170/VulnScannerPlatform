@@ -15,7 +15,7 @@ function verifyToken(req, res, next) {
     req.userId = decoded.userId;
     next();
   } catch (err) {
-    console.error('Error verifying token:', err); 
+    console.error('Error al verificar token:', err);
     return res.status(403).json({ error: 'Token inválido o expirado' });
   }
 }

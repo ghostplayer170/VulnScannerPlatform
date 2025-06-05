@@ -8,8 +8,6 @@ const Project = require('../models/Project');
 const router = express.Router();
 router.use(verifyToken);
 
-
-// Rutas públicas
 router.get('/status', async (req, res) => {
   try {
     const response = await axios.get(`${process.env.SONARQUBE_URL}/api/system/status`);
@@ -17,25 +15,6 @@ router.get('/status', async (req, res) => {
   } catch (err) {
     console.error('Error obteniendo estado de SonarQube:', err);
     res.status(500).json({ error: 'No se pudo obtener el estado de SonarQube' });
-  }
-});
-
-// Rutas protegidas
-router.post('/projects', async (req, res) => {
-  const { name } = req.body;
-  const userId = req.userId;
-
-  const projectKey = `project_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-
-  try {
-    await createSonarProject(projectKey, name);
-    const newProject = new Project({ userId, projectKey, name });
-    await newProject.save();
-
-    res.status(201).json({ message: 'Proyecto creado correctamente', project: newProject });
-  } catch (err) {
-    console.error('Error creando proyecto:', err);
-    res.status(500).json({ error: 'No se pudo crear el proyecto' });
   }
 });
 
@@ -57,5 +36,21 @@ router.get('/metrics', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+const { runSonarScanner } = require('../services/sonarService');
+
+router.post('/analyze', async (req, res) => {
+  const { projectKey, code, language } = req.body;
+
+  try {
+    const output = await runSonarScanner(projectKey, code, language);
+    res.status(200).json({ message: 'Análisis completado', output });
+  } catch (err) {
+    console.error('Error al ejecutar análisis:', err.message);
+    res.status(500).json({ error: 'Error al ejecutar análisis', details: err.message });
+  }
+});
+
+
 
 module.exports = router;
