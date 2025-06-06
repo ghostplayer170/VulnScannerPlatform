@@ -17,7 +17,7 @@ export async function fetchExistingProjects() {
   const res = await fetch(`${BASE_URL}/projects`, {
     headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }
   });
-  const data = await res.json(); 
+  const data = await res.json();
   return data.projects || [];
 }
 
@@ -49,8 +49,10 @@ export async function sendAnalysisRequest({ code, projectKey, projectName, langu
   // Enviar solicitud de análisis
   const res = await fetch(`${BASE_URL}/sonarqube/analyze`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    ...getAuthHeaders(),
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders()
+    },
     body: JSON.stringify({ code, projectKey, projectName, language })
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
