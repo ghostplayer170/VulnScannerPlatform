@@ -12,6 +12,7 @@ const SONARQUBE_URL = process.env.SONARQUBE_URL;
 const SONARQUBE_TOKEN = process.env.SONARQUBE_TOKEN;
 const authHeader = 'Basic ' + Buffer.from(`${process.env.SONARQUBE_USER}:${process.env.SONARQUBE_PASS}`).toString('base64');
 
+// Crea un nuevo proyecto en SonarQube
 async function createSonarProject(projectKey, projectName) {
   try {
     const data = qs.stringify({
@@ -37,6 +38,7 @@ async function createSonarProject(projectKey, projectName) {
   }
 }
 
+// Valida el token de SonarQube para asegurarse de que es válido
 async function validateSonarToken() {
   try {
     const res = await axios.get(`${SONARQUBE_URL}/api/authentication/validate`, {
@@ -49,6 +51,7 @@ async function validateSonarToken() {
   }
 }
 
+// Ejecuta Sonar Scanner para analizar el código fuente
 async function runSonarScanner(projectKey, code, language) {
 
   const isValidToken = await validateSonarToken();
@@ -102,7 +105,7 @@ async function runSonarScanner(projectKey, code, language) {
     if (!result) {
       throw new Error('No se obtuvo resultado del análisis de Sonar Scanner');
     }
-
+    await waitForAnalysisCompletion(projectKey);
   }
   catch (err) {
     console.error('Error ejecutando Sonar Scanner:', err.message);
@@ -111,6 +114,7 @@ async function runSonarScanner(projectKey, code, language) {
   return await getAnalysisResults(projectKey);
 }
 
+// Devuelve la solución para un problema específico basado en su clave de regla
 async function getSolutionForIssue(ruleKey) {
   try {
     const res = await axios.get(`${SONARQUBE_URL}/api/rules/search?rule_key=${ruleKey}`, {
@@ -124,6 +128,33 @@ async function getSolutionForIssue(ruleKey) {
   }
 }
 
+// Espera a que SonarQube complete el análisis del proyecto
+async function waitForAnalysisCompletion(projectKey, timeoutMs = 10000, intervalMs = 1000) {
+  const startTime = Date.now();
+  while (Date.now() - startTime < timeoutMs) {
+    try {
+      const res = await axios.get(`${SONARQUBE_URL}/api/ce/component?component=${projectKey}`, {
+        headers: { Authorization: authHeader }
+      });
+
+      const task = res.data.queue?.[0] || res.data.current;
+      const status = task?.status;
+
+      if (status === 'SUCCESS') {
+        return true;
+      }
+
+      console.log(`Esperando análisis de SonarQube para ${projectKey}... Status actual: ${status}`);
+      await new Promise((resolve) => setTimeout(resolve, intervalMs));
+    } catch (err) {
+      console.warn('Error al consultar el estado del análisis:', err.message);
+    }
+  }
+
+  throw new Error('Timeout esperando que SonarQube finalice el análisis');
+}
+
+// Obtiene los resultados del análisis de SonarQube para un proyecto específico
 async function getAnalysisResults(projectKey) {
   const res = await axios.get(`${SONARQUBE_URL}/api/issues/search`, {
     headers: { Authorization: authHeader }
@@ -132,11 +163,10 @@ async function getAnalysisResults(projectKey) {
   if (res.status !== 200) {
     throw new Error('Error al obtener resultados del análisis');
   }
-
+  
   const issues = res.data.issues.filter(issue => issue.component.startsWith(`${projectKey}:`));
 
   const uniqueRuleKeys = [...new Set(issues.map(issue => issue.rule))];
-  console.log('Reglas únicas encontradas:', uniqueRuleKeys);
 
   const rulesMap = {};
   await Promise.all(
@@ -150,11 +180,12 @@ async function getAnalysisResults(projectKey) {
   const issuesWithSolutions = issues.map(issue => ({
     ...issue,
     solutionHtml: rulesMap[issue.rule] || '<p>Sin solución disponible</p>'
-  }));
+  }));  
 
   return issuesWithSolutions;
 }
 
+// Obtiene los lenguajes soportados por SonarQube
 async function getSupportedLanguages() {
   try {
     const res = await axios.get(`${SONARQUBE_URL}/api/languages/list`, {
@@ -167,10 +198,4 @@ async function getSupportedLanguages() {
   }
 }
 
-export {
-  createSonarProject,
-  validateSonarToken,
-  runSonarScanner,
-  getAnalysisResults,
-  getSupportedLanguages
-};
+export { createSonarProject, validateSonarToken, runSonarScanner, getAnalysisResults, getSupportedLanguages };

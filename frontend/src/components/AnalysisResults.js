@@ -37,8 +37,12 @@ export default function AnalysisResults({ issues }) {
     return (
       <div className="analysis-container">
         <div className="warning-card">
-          <h2 className="warning-title">Sin datos</h2>
-          <p className="warning-message">No hay datos de análisis disponibles.</p>
+          <h2 className="warning-title">Análisis Completado</h2>
+          <p className="warning-message">No se han detectado problemas en el código analizado.</p>
+          <p className="warning-suggestion">Puedes intentar con otro código o revisar la configuración del proyecto.</p>
+          <p className="warning-note">Si crees que esto es un error, revisa la configuración del proyecto o contacta al administrador.</p>
+          <p className="warning-note">Recuerda que el análisis depende de la calidad del código y las reglas configuradas.</p>
+          <p className="warning-note">¡Gracias por usar nuestro analizador de código!</p>
         </div>
       </div>
     );

@@ -5,7 +5,8 @@ import ConfigPanel from './components/ConfigPanel';
 import AnalysisResults from './components/AnalysisResults';
 import ServerStatus from './components/ServerStatus';
 import {
-  checkServerStatus, fetchExistingProjects, sendAnalysisRequest, validateToken } from './services/api';
+  checkServerStatus, fetchExistingProjects, sendAnalysisRequest, validateToken, deleteProject, getAnalysisResultsForProject
+} from './services/api';
 import LoginForm from './components/LoginForm';
 import './styles/App.css';
 
@@ -39,11 +40,13 @@ function App() {
     }
   }, [token]);
 
+  // Maneja el inicio de sesión y guarda el token en localStorage
   const handleLogin = (jwtToken) => {
     localStorage.setItem('token', jwtToken);
     setToken(jwtToken);
   };
 
+  // Verifica el estado del servidor y obtiene proyectos existentes al cargar la aplicación
   useEffect(() => {
     if (token) {
       checkServerStatus().then(setServerStatus);
@@ -51,42 +54,64 @@ function App() {
     }
   }, [token]);
 
+  // Verifica el estado del servidor cada minuto si hay un token válido
   useEffect(() => {
     if (!token) return;
 
-    let timeoutId;
-
-    const refreshStatus = async () => {
+    const fetchStatus = async () => {
       try {
         const statusData = await checkServerStatus();
         setServerStatus(statusData);
-
-        // Define el intervalo según el estado
-        const delay = statusData.status === 'available' ? 5 * 60 * 1000 : 30 * 1000;
-
-        // Programa la próxima verificación
-        timeoutId = setTimeout(refreshStatus, delay);
-      } catch (err) {
-        console.error('Error al actualizar estado del servidor:', err);
-        timeoutId = setTimeout(refreshStatus, 30 * 1000); // fallback
+      } catch (error) {
+        console.error('Error al obtener estado del servidor:', error);
       }
     };
 
-    refreshStatus();
-
-    // Limpia el temporizador al desmontar el componente
-    return () => clearTimeout(timeoutId);
+    fetchStatus();
+    const intervalId = setInterval(fetchStatus, 60 * 1000); // cada 60 segundos
+    return () => clearInterval(intervalId);
   }, [token]);
-
+  
   if (!token) {
     return <LoginForm onLogin={handleLogin} />;
   }
 
-  const handleSelectProject = (project) => {
-    setProjectKey(project.key);
-    setProjectName(project.name);
+  // Maneja la eliminación de un proyecto existente
+  const handleDeleteProject = async (projectKeyToDelete) => {
+    if (!window.confirm(`¿Estás seguro de que quieres eliminar el proyecto "${projectKeyToDelete}"? Esta acción no se puede deshacer.`)) return;
+
+    try {
+      console.log('Eliminando proyecto:', projectKeyToDelete);
+      await deleteProject(projectKeyToDelete);
+      const updatedProjects = await fetchExistingProjects();
+      setExistingProjects(updatedProjects);
+
+      // Si el proyecto eliminado es el que estaba seleccionado
+      if (projectKey === projectKeyToDelete) {
+        setProjectKey('');
+        setProjectName('');
+        setAnalysisResult(null);
+      }
+    } catch (err) {
+      console.error('Error al eliminar el proyecto:', err);
+      alert('No se pudo eliminar el proyecto. Inténtalo nuevamente.');
+    }
   };
 
+  // Maneja la selección de un proyecto existente
+  const handleSelectProject = async (project) => {
+    setProjectKey(project.key);
+    setProjectName(project.name);
+    try {
+      const results = await getAnalysisResultsForProject(project.projectKey);
+      setAnalysisResult(results);
+    } catch (error) {
+      console.error('Error al obtener resultados del análisis:', error);
+      setAnalysisResult({ error: 'No se pudo recuperar el análisis del proyecto.' });
+    }
+  };
+
+  // Maneja el análisis del código
   const handleAnalyze = async () => {
     if (!projectKey.trim() || !projectName.trim()) {
       alert('Por favor complete el Project Key y Project Name');
@@ -107,11 +132,11 @@ function App() {
       setLoading(false);
     }
   };
-  
+
   return (
     <div className="App">
       <header className="app-header">
-        <h1>Analizador de Código con SonarQube</h1>
+        <h1 className='app-title'>Analizador de Código con SonarQube</h1>
         <ServerStatus status={serverStatus} />
       </header>
 
@@ -125,6 +150,7 @@ function App() {
           setLanguage={setLanguage}
           existingProjects={existingProjects}
           handleSelectProject={handleSelectProject}
+          handleDeleteProject={handleDeleteProject}
         />
 
         <CodeEditor

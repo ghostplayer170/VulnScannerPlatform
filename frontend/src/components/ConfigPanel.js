@@ -1,8 +1,17 @@
 import { useEffect, useState } from 'react';
 import { getSupportedLanguages } from '../services/api';
 
-function ConfigPanel({ projectKey, setProjectKey, projectName, setProjectName, language, setLanguage, existingProjects, handleSelectProject }) {
-
+function ConfigPanel({
+  projectKey,
+  setProjectKey,
+  projectName,
+  setProjectName,
+  language,
+  setLanguage,
+  existingProjects,
+  handleSelectProject,
+  handleDeleteProject
+}) {
   const [languageOptions, setLanguageOptions] = useState([]);
 
   useEffect(() => {
@@ -28,7 +37,7 @@ function ConfigPanel({ projectKey, setProjectKey, projectName, setProjectName, l
   useEffect(() => {
     if (projectName.trim()) {
       const sanitized = projectName.trim().replace(/\s+/g, '_');
-      const key = `project_${sanitized}_${Date.now()}`;
+      const key = `project_${sanitized}_${new Date().toISOString().split('T')[0]}`;
       setProjectKey(key);
     }
   }, [projectName]);
@@ -81,7 +90,7 @@ function ConfigPanel({ projectKey, setProjectKey, projectName, setProjectName, l
             {existingProjects.map(project => (
               <li key={project.key}>
                 <button
-                  onClick={() => handleSelectProject(project)}
+                  onClick={() => {handleSelectProject(project)}}
                   className={projectKey === project.key ? 'selected' : ''}
                 >
                   {project.name}
@@ -91,6 +100,18 @@ function ConfigPanel({ projectKey, setProjectKey, projectName, setProjectName, l
           </ul>
         </div>
       )}
+
+      {existingProjects.length > 0 && projectKey && (
+        <div className="form-group">
+          <button
+            className="delete-project-btn"
+            onClick={() => { handleDeleteProject(projectKey); console.log(`Proyecto ${projectKey} eliminado`); }}
+          >
+            🗑️ Eliminar Proyecto Seleccionado
+          </button>
+        </div>
+      )}
+
     </div>
   );
 }

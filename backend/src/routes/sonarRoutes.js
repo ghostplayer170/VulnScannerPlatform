@@ -18,8 +18,21 @@ router.get('/status', async (req, res) => {
 
 router.post('/analyze', async (req, res) => {
   const { projectKey, code, language } = req.body;
+  const token = req.headers.authorization?.split(' ')[1];
   try {
-    const output = await runSonarScanner(projectKey, code, language);    
+    const output = await runSonarScanner(projectKey, code, language);  
+    console.log('Análisis completado:', output);  
+    const response = await axios.post(
+      `${process.env.BACKEND_URL}/projects/results/${projectKey}`,
+      { issues: output },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, 
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    console.log('Resultados guardados:', response.data);
     res.status(200).json({ message: 'Análisis completado', output });
   } catch (err) {
     console.error('Error al ejecutar análisis:', err.message);

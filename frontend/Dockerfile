@@ -38,5 +38,5 @@ RUN chown -R nginx:nginx /usr/share/nginx/html
 # 5) Ejecutar como nginx (no-root)
 USER nginx
 
-EXPOSE 80
+EXPOSE 8080
 CMD ["nginx", "-g", "daemon off;"]

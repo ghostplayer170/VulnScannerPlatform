@@ -5,6 +5,10 @@
   padding: 20px;
 }
 
+.app-title {
+  justify-content: center;
+}
+
 .app-header {
   display: flex;
   justify-content: space-between;
@@ -102,7 +106,7 @@
   margin-bottom: 15px;
 }
 
-.analyze-button {
+.analyze-button, .delete-project-btn {
   padding: 10px 15px;
   background-color: #3498db;
   color: white;
@@ -112,6 +116,10 @@
   font-size: 16px;
   transition: background-color 0.2s;
   align-self: flex-start;
+}
+
+.delete-project-btn {
+  background-color: #e74c3c;
 }
 
 .analyze-button:hover {

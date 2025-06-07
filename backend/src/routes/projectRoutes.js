@@ -12,14 +12,12 @@ router.use(verifyToken);
  * Crea un nuevo proyecto en SonarQube y lo guarda en MongoDB
  */
 router.post('/', async (req, res) => {
-  const { name } = req.body;
+  const { name, projectKey } = req.body;
   const userId = req.userId;
 
   if (!name || name.trim() === '') {
     return res.status(400).json({ error: 'El nombre del proyecto es obligatorio' });
   }
-
-  const projectKey = `project_${name.replace(/\s+/g, '_')}_${Date.now()}`;
 
   try {
     // Crea el proyecto en SonarQube
@@ -61,7 +59,8 @@ router.delete('/:projectKey', async (req, res) => {
   const { projectKey } = req.params;
   try {
     // Elimina el proyecto de MongoDB
-    const deletedProject = await Project.findOneAndDelete({ projectKey, userId: req.userId });
+    console.log('Eliminando proyecto con projectKey:', projectKey);
+    const deletedProject = await Project.findOneAndDelete({ projectKey});
     if (!deletedProject) {
       return res.status(404).json({ error: 'Proyecto no encontrado' });
     }
