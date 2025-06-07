@@ -67,8 +67,8 @@ async function getProjectMetrics(projectKey) {
 
 async function runSonarScanner(projectKey, code, language) {
 
-  // Validar token de SonarQube
   const isValidToken = await validateSonarToken();
+
   if (!isValidToken) {
     throw new Error('Token de SonarQube inválido');
   }
@@ -76,7 +76,7 @@ async function runSonarScanner(projectKey, code, language) {
   if (!projectKey || !code || !language) {
     throw new Error('Faltan parámetros necesarios: projectKey, code y language son obligatorios');
   }
-  // Nueva ruta dentro del contenedor
+
   const baseDir = path.resolve(__dirname, '..', 'tasks');
   const projectDir = path.join(baseDir, projectKey);
 
@@ -163,15 +163,24 @@ async function getAnalysisResults(projectKey) {
     })
   );
 
-
   const issuesWithSolutions = issues.map(issue => ({
     ...issue,
     solutionHtml: rulesMap[issue.rule] || '<p>Sin solución disponible</p>'
   }));
-
-  console.log('Problemas con soluciones:', issuesWithSolutions)
-
+  
   return issuesWithSolutions;
+}
+
+async function getSupportedLanguages() {
+  try {
+    const res = await axios.get(`${SONARQUBE_URL}/api/languages/list`, {
+      headers: { Authorization: authHeader }
+    });
+    return res.data.languages || [];
+  } catch (err) {
+    console.error('Error obteniendo lenguajes soportados:', err.message);
+    throw new Error('No se pudieron obtener los lenguajes soportados');
+  }
 }
 
 
@@ -180,5 +189,6 @@ export {
   validateSonarToken,
   getProjectMetrics,
   runSonarScanner,
-  getAnalysisResults
+  getAnalysisResults,
+  getSupportedLanguages
 };

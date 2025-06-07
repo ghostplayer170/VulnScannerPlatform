@@ -72,3 +72,13 @@ export const validateToken = async () => {
   if (!res.ok) throw new Error('Token inválido');
   return res.json();
 };
+
+// Get lengauges supported by SonarQube
+export const getSupportedLanguages = async () => {
+  const res = await fetch(`${BASE_URL}/sonarqube/languages`, {
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }
+  });
+  if (!res.ok) throw new Error('Error al obtener lenguajes');
+  const data = await res.json();
+  return data.languages || [];
+}

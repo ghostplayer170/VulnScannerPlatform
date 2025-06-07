@@ -1,11 +1,9 @@
 const express = require('express');
 const axios = require('axios');
-const User = require('../models/User');
-const { getProjectMetrics } = require('../services/sonarService');
 const verifyToken = require('../middleware/authMiddleware');
-const Project = require('../models/Project');
-
+const { runSonarScanner } = require('../services/sonarService');
 const router = express.Router();
+
 router.use(verifyToken);
 
 router.get('/status', async (req, res) => {
@@ -18,30 +16,8 @@ router.get('/status', async (req, res) => {
   }
 });
 
-router.get('/metrics', async (req, res) => {
-  const projectKey = req.query.projectKey;
-  if (!projectKey) return res.status(400).json({ error: 'Falta projectKey' });
-
-  try {
-    const user = await User.findById(req.userId);
-    if (!user) return res.status(401).json({ error: 'Usuario no encontrado' });
-
-    const project = await Project.findOne({ userId: user._id, projectKey });
-    if (!project) return res.status(403).json({ error: 'Acceso denegado al proyecto' });
-
-    const metrics = await getProjectMetrics(projectKey);
-    res.json(metrics);
-  } catch (err) {
-    console.error('Error obteniendo métricas:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-const { runSonarScanner } = require('../services/sonarService');
-
 router.post('/analyze', async (req, res) => {
   const { projectKey, code, language } = req.body;
-
   try {
     const output = await runSonarScanner(projectKey, code, language);
     res.status(200).json({ message: 'Análisis completado', output });
@@ -51,6 +27,18 @@ router.post('/analyze', async (req, res) => {
   }
 });
 
-
+router.get('/languages', async (req, res) => {
+  try {
+    const response = await getSupportedLanguages();
+    if (!response || !response.data) {
+      return res.status(500).json({ error: 'No se pudieron obtener los lenguajes' });
+    }
+    const languages = response.data.languages || [];
+    res.json({ languages });
+  } catch (err) {
+    console.error('Error obteniendo lenguajes:', err);
+    res.status(500).json({ error: 'No se pudieron obtener los lenguajes' });
+  }
+});
 
 module.exports = router;

@@ -37,13 +37,6 @@ const analysisSchema = new mongoose.Schema({
     default: Date.now
   },
   issues: [issueSchema],
-  metrics: {
-    bugs: Number,
-    vulnerabilities: Number,
-    code_smells: Number,
-    security_rating: String,
-    reliability_rating: String
-  },
   issuesCount: Number,
   sonarAnalysisId: String,
 });

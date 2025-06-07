@@ -1,29 +1,38 @@
-const languageOptions = [
-  { value: 'js', label: 'JavaScript' },
-  { value: 'ts', label: 'TypeScript' },
-  { value: 'java', label: 'Java' },
-  { value: 'py', label: 'Python' },
-  { value: 'php', label: 'PHP' },
-  { value: 'cs', label: 'C#' }
-];
+import { useEffect, useState } from 'react';
+import { getSupportedLanguages } from './services/api';
 
 function ConfigPanel({ projectKey, setProjectKey, projectName, setProjectName, language, setLanguage, existingProjects, handleSelectProject }) {
+  
+  const [languageOptions, setLanguageOptions] = useState([]);
+
+  useEffect(() => {
+    async function fetchLanguages() {
+      try {
+        const data = await getSupportedLanguages();
+        const options = data.languages.map(lang => ({
+          value: lang.key,
+          label: lang.name
+        }));
+        setLanguageOptions(options);
+      } catch (err) {
+        console.error('Error al obtener lenguajes:', err);
+        setLanguageOptions([{ value: 'unknown', label: 'Desconocido' }]);
+      }
+    }
+    fetchLanguages();
+  }, []);
+
+  useEffect(() => {
+    if (projectName.trim()) {
+      const sanitized = projectName.trim().replace(/\s+/g, '_');
+      const key = `project_${sanitized}_${Date.now()}`;
+      setProjectKey(key);
+    }
+  }, [projectName]);
+
   return (
     <div className="config-panel">
       <h2>Configuración</h2>
-      <div className="form-group">
-        <label htmlFor="projectKey">
-          Project Key: <span className="required">*</span>
-        </label>
-        <input
-          id="projectKey"
-          type="text"
-          value={projectKey}
-          onChange={(e) => setProjectKey(e.target.value)}
-          placeholder="my-project"
-        />
-        <p className="hint">Identificador único del proyecto</p>
-      </div>
 
       <div className="form-group">
         <label htmlFor="projectName">
@@ -36,6 +45,17 @@ function ConfigPanel({ projectKey, setProjectKey, projectName, setProjectName, l
           onChange={(e) => setProjectName(e.target.value)}
           placeholder="Mi Proyecto"
         />
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="projectKey">Project Key:</label>
+        <input
+          id="projectKey"
+          type="text"
+          value={projectKey}
+          disabled
+        />
+        <p className="hint">Se genera automáticamente a partir del nombre del proyecto</p>
       </div>
 
       <div className="form-group">
@@ -57,7 +77,7 @@ function ConfigPanel({ projectKey, setProjectKey, projectName, setProjectName, l
           <ul className="projects-list">
             {existingProjects.map(project => (
               <li key={project.key}>
-                <button 
+                <button
                   onClick={() => handleSelectProject(project)}
                   className={projectKey === project.key ? 'selected' : ''}
                 >

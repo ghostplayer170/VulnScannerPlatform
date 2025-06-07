@@ -4,7 +4,6 @@ const Project = require('../models/Project');
 const { createSonarProject } = require('../services/sonarService');
 const verifyToken = require('../middleware/authMiddleware');
 
-// Middleware para verificar el token de autenticación
 router.use(verifyToken);
 
 /**
