@@ -1,5 +1,31 @@
 const mongoose = require('mongoose');
 
+const issueSchema = new mongoose.Schema({
+  key: String,
+  rule: String,
+  severity: String,
+  component: String,
+  project: String,
+  status: String,
+  message: String,
+  effort: String,
+  debt: String,
+  author: String,
+  tags: [String],
+  creationDate: Date,
+  updateDate: Date,
+  type: String,
+  scope: String,
+  quickFixAvailable: Boolean,
+  messageFormattings: Array,
+  line: Number,
+  textRange: {
+    startLine: Number,
+    endLine: Number
+  },
+  solutionHtml: String // para guardar la guía HTML
+});
+
 const analysisSchema = new mongoose.Schema({
   projectId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -10,6 +36,7 @@ const analysisSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
+  issues: [issueSchema],
   metrics: {
     bugs: Number,
     vulnerabilities: Number,
@@ -19,7 +46,6 @@ const analysisSchema = new mongoose.Schema({
   },
   issuesCount: Number,
   sonarAnalysisId: String,
-  dashboardUrl: String
 });
 
 module.exports = mongoose.model('Analysis', analysisSchema);

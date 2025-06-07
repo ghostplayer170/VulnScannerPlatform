@@ -1,3 +1,5 @@
+import '../styles/AnalysisResults.css';
+
 const getSeverityColor = (severity) => {
   const colors = {
     BLOCKER: '#d42a2a',
@@ -12,85 +14,169 @@ const getSeverityColor = (severity) => {
 const getIssueTypeEmoji = (type) => {
   const emojis = {
     BUG: '🐞',
-    VULNERABILITY: '🛡️',
+    VULNERABILITY: '🔒',
     CODE_SMELL: '💩',
     SECURITY_HOTSPOT: '🔥'
   };
   return emojis[type] || '❓';
 };
 
-function AnalysisResults({ result }) {
-  if (result.error) {
+const getSeverityPriority = (severity) => {
+  const priorities = {
+    BLOCKER: 5,
+    CRITICAL: 4,
+    MAJOR: 3,
+    MINOR: 2,
+    INFO: 1
+  };
+  return priorities[severity] || 0;
+};
+
+export default function AnalysisResults({ issues }) {
+  if (!Array.isArray(issues) || issues.length === 0) {
     return (
-      <div className="results-container">
-        <div className="error-message">
-          <h2>Error</h2>
-          <p>{result.error}</p>
-          {result.details && <pre className="error-details">{result.details}</pre>}
+      <div className="analysis-container">
+        <div className="warning-card">
+          <h2 className="warning-title">Sin datos</h2>
+          <p className="warning-message">No hay datos de análisis disponibles.</p>
         </div>
       </div>
     );
   }
 
+  const totalIssues = issues.length;
+  const severityCounts = issues.reduce((acc, issue) => {
+    acc[issue.severity] = (acc[issue.severity] || 0) + 1;
+    return acc;
+  }, {});
+  const typeCounts = issues.reduce((acc, issue) => {
+    acc[issue.type] = (acc[issue.type] || 0) + 1;
+    return acc;
+  }, {});
+
+  const sortedIssues = [...issues].sort(
+    (a, b) => getSeverityPriority(b.severity) - getSeverityPriority(a.severity)
+  );
+
   return (
-    <div className="results-container">
-      <h2>Resultados del Análisis</h2>
-      <div className="metrics-panel">
-        <div className="metric-card">
-          <span className="metric-value">{result.issuesCount || 0}</span>
-          <span className="metric-label">Total Issues</span>
-        </div>
-        {result.metrics && result.metrics.map(metric => (
-          <div className="metric-card" key={metric.metric}>
-            <span className="metric-value">{metric.value}</span>
-            <span className="metric-label">
-              {metric.metric.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase())}
-            </span>
+    <div className="analysis-container">
+      <div className="analysis-card">
+        <h2 className="analysis-title">Resultados del Análisis</h2>
+
+        <div className="metrics-grid">
+          <div className="metric-card total-issues">
+            <div className="metric-value">{totalIssues}</div>
+            <div className="metric-label">Total Issues</div>
           </div>
-        ))}
-      </div>
+          {Object.entries(severityCounts).map(([sev, count]) => (
+            <div
+              key={sev}
+              className="metric-card severity-card"
+              style={{
+                backgroundColor: `${getSeverityColor(sev)}15`,
+                borderColor: `${getSeverityColor(sev)}50`
+              }}
+            >
+              <div className="metric-value" style={{ color: getSeverityColor(sev) }}>
+                {count}
+              </div>
+              <div className="metric-label">{sev.toLowerCase()}</div>
+            </div>
+          ))}
+        </div>
 
-      {result.issues?.length > 0 ? (
-        <div className="issues-list">
-          <h3>Problemas encontrados</h3>
-          <table>
-            <thead>
-              <tr>
-                <th>Tipo</th>
-                <th>Severidad</th>
-                <th>Descripción</th>
-                <th>Ubicación</th>
-              </tr>
-            </thead>
-            <tbody>
-              {result.issues.map((issue, index) => (
-                <tr key={index}>
-                  <td>
-                    <span className="issue-type">{getIssueTypeEmoji(issue.type)} {issue.type}</span>
-                  </td>
-                  <td>
-                    <span className="severity-badge" style={{ backgroundColor: getSeverityColor(issue.severity) }}>{issue.severity}</span>
-                  </td>
-                  <td>{issue.message}</td>
-                  <td className="location">{issue.component.split(':').pop()}{issue.line && `:${issue.line}`}</td>
+        <div className="types-section">
+          <h3 className="section-title">Resumen por Tipo</h3>
+          <div className="types-grid">
+            {Object.entries(typeCounts).map(([type, count]) => (
+              <div key={type} className="type-card">
+                <div className="type-emoji">{getIssueTypeEmoji(type)}</div>
+                <div className="type-count">{count}</div>
+                <div className="type-name">{type.replace('_', ' ')}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="issues-section">
+          <h3 className="section-title">Problemas Encontrados ({sortedIssues.length})</h3>
+          <div className="table-container">
+            <table className="issues-table">
+              <thead>
+                <tr>
+                  <th>Tipo</th>
+                  <th>Severidad</th>
+                  <th>Descripción</th>
+                  <th>Etiquetas</th>
+                  <th>Ubicación</th>
+                  <th>Esfuerzo</th>
+                  <th>Solución</th> {/* nueva columna */}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {sortedIssues.map((issue) => (
+                  <tr key={issue.key}>
+                    <td>
+                      <div className="issue-type">
+                        <span className="issue-emoji">{getIssueTypeEmoji(issue.type)}</span>
+                        <span className="issue-type-text">
+                          {issue.type.replace('_', ' ')}
+                        </span>
+                      </div>
+                    </td>
+                    <td>
+                      <span
+                        className="severity-badge"
+                        style={{ backgroundColor: getSeverityColor(issue.severity) }}
+                      >
+                        {issue.severity}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="issue-description">
+                        <p className="issue-message">{issue.message}</p>
+                        {issue.rule && <p className="issue-rule">Regla: {issue.rule}</p>}
+                      </div>
+                    </td>
+                    <td>
+                      <div className="issue-tags">
+                        {issue.tags && issue.tags.map((tag, index) => (
+                          <span key={index} className="issue-tag">{tag}</span>
+                        ))}
+                      </div>
+                    </td>
+                    <td>
+                      <div className="issue-location">
+                        <div className="location-file">
+                          {issue.component.split(':').pop()}
+                        </div>
+                        {issue.line && <div className="location-line">Línea: {issue.line}</div>}
+                        {issue.textRange && (
+                          <div className="location-range">
+                            Rango: {issue.textRange.startLine} - {issue.textRange.endLine}
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td>
+                      <span className="issue-effort">{issue.effort || issue.debt}</span>
+                    </td>
+                    <td>
+                      <details className="issue-solution">
+                        <summary>Ver guía</summary>
+                        <div
+                          className="solution-content"
+                          dangerouslySetInnerHTML={{ __html: issue.solutionHtml }}
+                        />
+                      </details>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      ) : (
-        <div className="no-issues">
-          <p>¡Felicidades! No se encontraron problemas en el código.</p>
-        </div>
-      )}
-
-      {result.dashboardUrl && (
-        <div className="sonar-link">
-          <p><a href={result.dashboardUrl} target="_blank" rel="noreferrer">Ver resultados completos en SonarQube</a></p>
-        </div>
-      )}
+      </div>
     </div>
   );
 }
-
-export default AnalysisResults;

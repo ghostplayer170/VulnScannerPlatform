@@ -1,8 +1,16 @@
-const axios = require('axios');
+import axios from 'axios';
+import fs from 'fs';
+import path from 'path';
+import { exec } from 'child_process';
+import qs from 'qs';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const SONARQUBE_URL = process.env.SONARQUBE_URL;
 const SONARQUBE_TOKEN = process.env.SONARQUBE_TOKEN;
 const authHeader = 'Basic ' + Buffer.from(`${process.env.SONARQUBE_USER}:${process.env.SONARQUBE_PASS}`).toString('base64');
-const qs = require('qs'); // para convertir objetos a x-www-form-urlencoded
 
 async function createSonarProject(projectKey, projectName) {
   try {
@@ -57,10 +65,6 @@ async function getProjectMetrics(projectKey) {
   }
 }
 
-const fs = require('fs');
-const path = require('path');
-const { exec } = require('child_process');
-
 async function runSonarScanner(projectKey, code, language) {
 
   // Validar token de SonarQube
@@ -78,37 +82,103 @@ async function runSonarScanner(projectKey, code, language) {
 
   fs.mkdirSync(projectDir, { recursive: true });
 
-  fs.writeFileSync(path.join(projectDir, 'source_code.' + language), code);
+  fs.writeFileSync(path.join(projectDir, 'source_code_' + projectKey + '.' + language), code);
 
   const sonarProperties = `
-sonar.projectKey=${projectKey}
-sonar.sources=.
-sonar.host.url=${SONARQUBE_URL}
-sonar.login=${SONARQUBE_TOKEN}
+  sonar.projectKey=${projectKey}
+  sonar.sources=.
+  sonar.host.url=${SONARQUBE_URL}
+  sonar.login=${SONARQUBE_TOKEN}
   `.trim();
 
   fs.writeFileSync(path.join(projectDir, 'sonar-project.properties'), sonarProperties);
 
   const command = `sonar-scanner -Dsonar.projectBaseDir=${projectDir}`;
+  try {
+    const execResult = new Promise((resolve, reject) => {
+      exec(command, (error, stdout, stderr) => {
+        console.log('STDOUT:\n', stdout);
+        console.error('STDERR:\n', stderr);
 
-  return new Promise((resolve, reject) => {
-    exec(command, (error, stdout, stderr) => {
-      console.log('STDOUT:\n', stdout);
-      console.error('STDERR:\n', stderr);
+        try {
+          fs.rmSync(projectDir, { recursive: true, force: true });
+        } catch (cleanupError) {
+          console.warn('Error al eliminar el directorio temporal:', cleanupError.message);
+        }
 
-      try {
-        fs.rmSync(projectDir, { recursive: true, force: true });
-      } catch (cleanupError) {
-        console.warn('Error al eliminar el directorio temporal:', cleanupError.message);
-      }
+        if (error) {
+          return reject(new Error(stderr || error.message));
+        }
 
-      if (error) {
-        return reject(new Error(stderr || error.message));
-      }
-
-      resolve(stdout);
+        resolve(stdout);
+      });
     });
-  });
+    const result = await execResult;
+    console.log('Análisis completado:', result);
+    if (!result) {
+      throw new Error('No se obtuvo resultado del análisis de Sonar Scanner');
+    }
+
+  }
+  catch (err) {
+    console.error('Error ejecutando Sonar Scanner:', err.message);
+    throw new Error('Error al ejecutar Sonar Scanner');
+  }
+  return await getAnalysisResults(projectKey);
 }
 
-module.exports = { createSonarProject, getProjectMetrics, runSonarScanner };
+async function getSolutionForIssue(ruleKey) {
+  try {
+    const res = await axios.get(`${SONARQUBE_URL}/api/rules/search?rule_key=${ruleKey}`, {
+      headers: { Authorization: authHeader }
+    });
+    const rule = res.data.rules?.[0];
+    return rule?.htmlDesc || '<p>Solución no disponible.</p>';
+  } catch (err) {
+    console.error(`Error obteniendo la regla ${ruleKey}:`, err.message);
+    return '<p>Error al obtener la solución.</p>';
+  }
+}
+
+async function getAnalysisResults(projectKey) {
+  const res = await axios.get(`${SONARQUBE_URL}/api/issues/search`, {
+    headers: { Authorization: authHeader }
+  });
+
+  if (res.status !== 200) {
+    throw new Error('Error al obtener resultados del análisis');
+  }
+
+  const issues = res.data.issues.filter(issue => issue.component.startsWith(`${projectKey}:`));
+
+  const uniqueRuleKeys = [...new Set(issues.map(issue => issue.rule))];
+  console.log('Reglas únicas encontradas:', uniqueRuleKeys);
+
+  const rulesMap = {};
+  await Promise.all(
+    uniqueRuleKeys.map(async (ruleKey) => {
+      const htmlDesc = await getSolutionForIssue(ruleKey);
+      console.log(`Regla ${ruleKey} procesada:`, htmlDesc);
+      rulesMap[ruleKey] = htmlDesc;
+    })
+  );
+
+
+  const issuesWithSolutions = issues.map(issue => ({
+    ...issue,
+    solutionHtml: rulesMap[issue.rule] || '<p>Sin solución disponible</p>'
+  }));
+
+  console.log('Problemas con soluciones:', issuesWithSolutions)
+
+  return issuesWithSolutions;
+}
+
+
+export {
+  createSonarProject,
+  validateSonarToken,
+  getProjectMetrics,
+  runSonarScanner,
+  getAnalysisResults
+};

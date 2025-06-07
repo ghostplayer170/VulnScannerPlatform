@@ -97,7 +97,7 @@ function App() {
 
     try {
       const result = await sendAnalysisRequest({ code, projectKey, projectName, language });
-      setAnalysisResult(result);
+      setAnalysisResult(result.output);
       const updatedProjects = await fetchExistingProjects();
       setExistingProjects(updatedProjects);
     } catch (error) {
@@ -136,7 +136,7 @@ function App() {
 
       {loading && <div className="loading-overlay"><div className="loading-spinner"></div><p>Analizando código...</p></div>}
 
-      {analysisResult && <AnalysisResults result={analysisResult} />}
+      {analysisResult && <AnalysisResults issues={analysisResult} />}
     </div>
   );
 }

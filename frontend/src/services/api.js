@@ -47,16 +47,22 @@ export async function sendAnalysisRequest({ code, projectKey, projectName, langu
   }
 
   // Enviar solicitud de análisis
-  const res = await fetch(`${BASE_URL}/sonarqube/analyze`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...getAuthHeaders()
-    },
-    body: JSON.stringify({ code, projectKey, projectName, language })
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return await res.json();
+  try {
+    const res = await fetch(`${BASE_URL}/sonarqube/analyze`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeaders()
+      },
+      body: JSON.stringify({ code, projectKey, projectName, language })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error('Error al enviar solicitud de análisis:', error);
+    throw new Error('Error al enviar solicitud de análisis');
+  }
 }
 
 export const validateToken = async () => {

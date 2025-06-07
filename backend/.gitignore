@@ -12,3 +12,6 @@ yarn-error.log*
 # sistema
 dist/
 coverage/
+
+# Task runner
+src/tasks/
