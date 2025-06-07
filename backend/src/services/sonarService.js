@@ -49,22 +49,6 @@ async function validateSonarToken() {
   }
 }
 
-async function getProjectMetrics(projectKey) {
-  const metrics = 'bugs,vulnerabilities,code_smells,security_rating,reliability_rating';
-  const url = `${SONARQUBE_URL}/api/measures/component`;
-
-  try {
-    const res = await axios.get(url, {
-      params: { component: projectKey, metricKeys: metrics },
-      headers: { Authorization: authHeader }
-    });
-    return res.data;
-  } catch (err) {
-    console.error('Error obteniendo métricas:', err.response?.data || err.message);
-    throw new Error('No se pudo obtener métricas de SonarQube');
-  }
-}
-
 async function runSonarScanner(projectKey, code, language) {
 
   const isValidToken = await validateSonarToken();
@@ -167,7 +151,7 @@ async function getAnalysisResults(projectKey) {
     ...issue,
     solutionHtml: rulesMap[issue.rule] || '<p>Sin solución disponible</p>'
   }));
-  
+
   return issuesWithSolutions;
 }
 
@@ -176,18 +160,16 @@ async function getSupportedLanguages() {
     const res = await axios.get(`${SONARQUBE_URL}/api/languages/list`, {
       headers: { Authorization: authHeader }
     });
-    return res.data.languages || [];
+    return res.data || [];
   } catch (err) {
     console.error('Error obteniendo lenguajes soportados:', err.message);
     throw new Error('No se pudieron obtener los lenguajes soportados');
   }
 }
 
-
 export {
   createSonarProject,
   validateSonarToken,
-  getProjectMetrics,
   runSonarScanner,
   getAnalysisResults,
   getSupportedLanguages

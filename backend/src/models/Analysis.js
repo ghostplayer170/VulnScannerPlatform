@@ -37,8 +37,7 @@ const analysisSchema = new mongoose.Schema({
     default: Date.now
   },
   issues: [issueSchema],
-  issuesCount: Number,
-  sonarAnalysisId: String,
+  issuesCount: Number
 });
 
 module.exports = mongoose.model('Analysis', analysisSchema);

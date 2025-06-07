@@ -4,7 +4,8 @@ import CodeEditor from './components/CodeEditor';
 import ConfigPanel from './components/ConfigPanel';
 import AnalysisResults from './components/AnalysisResults';
 import ServerStatus from './components/ServerStatus';
-import { checkServerStatus, fetchExistingProjects, sendAnalysisRequest, validateToken } from './services/api';
+import {
+  checkServerStatus, fetchExistingProjects, sendAnalysisRequest, validateToken } from './services/api';
 import LoginForm from './components/LoginForm';
 import './styles/App.css';
 
@@ -106,7 +107,7 @@ function App() {
       setLoading(false);
     }
   };
-
+  
   return (
     <div className="App">
       <header className="app-header">

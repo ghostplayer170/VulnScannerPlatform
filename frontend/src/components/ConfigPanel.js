@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react';
-import { getSupportedLanguages } from './services/api';
+import { getSupportedLanguages } from '../services/api';
 
 function ConfigPanel({ projectKey, setProjectKey, projectName, setProjectName, language, setLanguage, existingProjects, handleSelectProject }) {
-  
+
   const [languageOptions, setLanguageOptions] = useState([]);
 
   useEffect(() => {
     async function fetchLanguages() {
       try {
-        const data = await getSupportedLanguages();
-        const options = data.languages.map(lang => ({
+        const langs = await getSupportedLanguages();
+        if (!Array.isArray(langs) || langs.length === 0) {
+          throw new Error('No se encontraron lenguajes disponibles');
+        }
+        const options = langs.map(lang => ({
           value: lang.key,
           label: lang.name
         }));
