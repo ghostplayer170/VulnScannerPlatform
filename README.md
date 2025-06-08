@@ -99,12 +99,68 @@ npm start         # disponible en http://localhost:3000
 
 Asegurate de que el frontend apunte al backend correcto modificando `REACT_APP_BACKEND_URL`.
 
-## Estructura del repositorio
+## 📁 Estructura del proyecto
 
 ```
-compose.yml    # orquestacion de contenedores
-backend/       # codigo del servidor Express y conexion con SonarQube
-frontend/      # aplicacion React
+VulnScannerPlatform/
+│
+├── compose.yml                  # Orquestación de los servicios Docker (frontend, backend, SonarQube, MongoDB)
+│
+├── backend/                     # Backend en Node.js + Express para autenticación, gestión y análisis
+│   ├── Dockerfile               # Dockerfile para construir la imagen del backend
+│   ├── .env                     # Variables de entorno para MongoDB, JWT y SonarQube
+│   ├── package.json             # Dependencias y scripts del backend
+│   └── src/
+│       ├── index.js             # Punto de entrada de la API Express
+│       │
+│       ├── middleware/
+│       │   └── authMiddleware.js  # Middleware para validar el token JWT
+│       │
+│       ├── models/              # Esquemas de Mongoose para MongoDB
+│       │   ├── User.js           # Modelo de usuario
+│       │   ├── Project.js        # Modelo de proyecto
+│       │   └── Analysis.js       # Modelo de análisis (issues detectados)
+│       │
+│       ├── routes/              # Rutas de la API
+│       │   ├── authRoutes.js     # Registro e inicio de sesión
+│       │   ├── projectRoutes.js  # Gestión de proyectos por usuario
+│       │   └── sonarRoutes.js    # Análisis de código y consulta de lenguajes
+│       │
+│       ├── services/
+│       │   └── sonarService.js   # Lógica para ejecutar SonarScanner y procesar resultados
+│       │
+│       └── tasks/               # Carpeta temporal para guardar el código fuente antes del análisis
+│
+├── frontend/                    # Frontend en React.js
+│   ├── Dockerfile               # Dockerfile para construir la imagen del frontend (Nginx)
+│   ├── nginx.conf               # Configuración personalizada de Nginx
+│   ├── .env                     # URL del backend (REACT_APP_BACKEND_URL)
+│   ├── package.json             # Dependencias y scripts del frontend
+│   └── src/
+│       ├── index.js             # Punto de entrada React
+│       ├── App.js               # Componente principal
+│       │
+│       ├── components/          # Componentes reutilizables de la interfaz
+│       │   ├── CodeEditor.js           # Editor de código para análisis
+│       │   ├── ConfigPanel.js          # Panel para crear y seleccionar proyectos
+│       │   ├── AnalysisResults.js      # Visualización de issues
+│       │   ├── IssueSolutionModal.js   # Modal para mostrar la solución HTML de cada issue
+│       │   ├── LoginForm.js            # Formulario de inicio de sesión
+│       │   ├── RegisterForm.js         # Formulario de registro
+│       │   └── ServerStatus.js         # Indicador del estado del backend y SonarQube
+│       │
+│       ├── services/
+│       │   └── api.js            # Funciones para consumir las APIs del backend
+│       │
+│       └── styles/              # Archivos CSS modulares para cada componente
+│           ├── App.css
+│           ├── AnalysisResults.css
+│           ├── IssueSolutionModal.css
+│           ├── LoginRegister.css
+│
+├── README.md                    # Documentación del proyecto
+├── .gitignore                   # Archivos y carpetas ignoradas por Git
+├── .dockerignore                # Archivos ignorados durante el build de Docker
 ```
 
 ---
