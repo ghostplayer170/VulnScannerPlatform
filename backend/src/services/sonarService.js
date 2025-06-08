@@ -69,12 +69,13 @@ async function runSonarScanner(projectKey, code, language) {
         console.error('STDERR:\n', stderr);
         try {
           // Limpia el directorio del proyecto después de ejecutar Sonar Scanner
-          fs.rmSync(projectDir, { recursive: true, force: true }); 
+          fs.rmSync(projectDir, { recursive: true, force: true });
         } catch (cleanupError) {
           console.warn('Error al eliminar el directorio temporal:', cleanupError.message);
-        
-        if (error) return reject(new Error(stderr || error.message));
-        resolve(stdout);
+
+          if (error) return reject(new Error(stderr || error.message));
+          resolve(stdout);
+        }
       });
     });
     const result = await execResult;
@@ -84,7 +85,8 @@ async function runSonarScanner(projectKey, code, language) {
   }
   catch (err) {
     console.error('Error ejecutando Sonar Scanner:', err.message);
-    throw new Error('Error al ejecutar Sonar Scanner');}
+    throw new Error('Error al ejecutar Sonar Scanner');
+  }
   // Obtiene los resultados del análisis
   return await getAnalysisResults(projectKey);
 }
@@ -144,7 +146,7 @@ async function getAnalysisResults(projectKey) {
   const issuesWithSolutions = issues.map(issue => ({
     ...issue,
     solutionHtml: rulesMap[issue.rule] || '<p>Sin solución disponible</p>'
-  }));  
+  }));
   return issuesWithSolutions;
 }
 
