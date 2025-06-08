@@ -48,7 +48,7 @@ Plataforma web que integra **SonarQube**, un backend en **Node.js/Express** y un
    ```
    ***Nota***:
    Para las claves [SONARQUBE_TOKEN, SONARQUBE_USER, SONARQUBE_PASS], se debe seguir la guia de [Sonarqube: Managing your tokens](https://docs.sonarsource.com/sonarqube-server/latest/user-guide/managing-tokens/).
-   Se debe acceder al sevidor mediante [SONARQUBE_UR](http://sonarqube:9000), crear una cuenta de servicio y asignarlo al grupo de administradores y generar un token global.
+   Se debe acceder al sevidor mediante [SONARQUBE_URL](http://sonarqube:9000), crear una cuenta de servicio y asignarlo al grupo de administradores y generar un token global.
 
    Estas variables son leidas por el servidor Express
 
