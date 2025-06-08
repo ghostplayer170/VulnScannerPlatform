@@ -27,11 +27,7 @@ router.post('/analyze', async (req, res) => {
     const response = await axios.post(
       `${process.env.BACKEND_URL}/projects/results/${projectKey}`,
       { issues: output },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`, 
-          'Content-Type': 'application/json'
-        }
+      { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json'}
       }
     );
     console.log('Resultados guardados:', response.data);

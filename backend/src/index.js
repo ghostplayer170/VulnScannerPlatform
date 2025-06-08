@@ -1,3 +1,4 @@
+/* index.js - Punto de entrada del servidor Express */
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
@@ -27,7 +28,7 @@ mongoose.connect(process.env.MONGO_URI, {
   useUnifiedTopology: true
 }).then(() => {
   app.listen(process.env.PORT, () => {
-    console.log(`Servidor iniciado en puerto ${process.env.PORT || 5000}`);
+    console.log(`Servidor iniciado en puerto ${process.env.PORT}`);
   });
 }).catch(err => {
   console.error('Error de conexión a MongoDB:', err);
