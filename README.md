@@ -1,4 +1,4 @@
-﻿# VulnScannerPlatform
+﻿# PLATAFORMA WEB FULL-STACK PARA EL ANÁLISIS ESTÁTICO DE CÓDIGO FUENTE MEDIANTE SONARQUBE Y DOCKER (VulnScannerPlatform)
 
 Plataforma web que integra **SonarQube**, un backend en **Node.js/Express** y un frontend en **React** para analizar codigo fuente y gestionar proyectos.
 
