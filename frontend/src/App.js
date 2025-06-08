@@ -134,10 +134,25 @@ function App() {
   return (
     <div className="App">
       <header className="app-header">
-        <div className="logo-container">
-          <h1 className='app-title'>VulnScannerPlatform</h1>
+        <div className="logout-container">
+          <button className="logout-button" onClick={() => {
+            localStorage.removeItem('token');
+            setToken('');
+            setServerStatus(null);
+            setExistingProjects([]);
+            setProjectKey('');
+            setProjectName('');
+            setAnalysisResult(null);
+          }}>
+            Logout
+          </button>
         </div>
-        <ServerStatus status={serverStatus} />
+        <div className="logo-container">
+          <h1 className="app-title">VulnScannerPlatform</h1>
+        </div>
+        <div className="status-container">
+          <ServerStatus status={serverStatus} />
+        </div>
       </header>
 
       <div className="main-container">

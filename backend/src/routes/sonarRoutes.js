@@ -1,7 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 const verifyToken = require('../middleware/authMiddleware');
-const { runSonarScanner, getSupportedLanguages } = require('../services/sonarService');
+const { runSonarScanner, getSupportedLanguages, getServerStatus } = require('../services/sonarService');
 const router = express.Router();
 
 router.use(verifyToken);
@@ -9,8 +9,11 @@ router.use(verifyToken);
 // Ruta para verificar el estado de SonarQube
 router.get('/status', async (req, res) => {
   try {
-    const response = await axios.get(`${process.env.SONARQUBE_URL}/api/system/status`);
-    res.json(response.data);
+    const serverStatus = await getServerStatus();
+    if (!serverStatus || !serverStatus.status) {
+      return res.status(500).json({ error: 'No se pudo obtener el estado de SonarQube' });
+    }
+    res.json(serverStatus);
   } catch (err) {
     console.error('Error obteniendo estado de SonarQube:', err);
     res.status(500).json({ error: 'No se pudo obtener el estado de SonarQube' });

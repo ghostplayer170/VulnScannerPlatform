@@ -36,13 +36,6 @@ function LoginForm({ onLogin }) {
 
     return (
         <div className="login-register-container">
-            <div className="app-header">
-                <header className="app-header">
-                    <div className="logo-container">
-                        <h1 className='app-title'>VulnScannerPlatform</h1>
-                    </div>
-                </header>
-            </div>
             <div className="login-container">
                 <h2>Iniciar sesión</h2>
                 <form onSubmit={handleSubmit}>

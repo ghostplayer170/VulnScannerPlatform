@@ -72,7 +72,6 @@ async function runSonarScanner(projectKey, code, language) {
           fs.rmSync(projectDir, { recursive: true, force: true });
         } catch (cleanupError) {
           console.warn('Error al eliminar el directorio temporal:', cleanupError.message);
-
           if (error) return reject(new Error(stderr || error.message));
           resolve(stdout);
         }
@@ -176,4 +175,15 @@ async function validateSonarToken() {
   }
 }
 
-export { createSonarProject, validateSonarToken, runSonarScanner, getAnalysisResults, getSupportedLanguages };
+// Obtiene el estado del servidor SonarQube
+async function getServerStatus() {
+  try {
+    const res = await axios.get(`${SONARQUBE_URL}/api/system/status`);
+    return res.data || { "status": "UNKNOWN" };
+  } catch (err) {
+    console.error('Error obteniendo estado de SonarQube:', err);
+    throw new Error('No se pudo obtener el estado de SonarQube');
+  }
+}
+
+export { createSonarProject, validateSonarToken, runSonarScanner, getAnalysisResults, getSupportedLanguages, getServerStatus };
