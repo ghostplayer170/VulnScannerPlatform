@@ -7,6 +7,7 @@ const verifyToken = require('../middleware/authMiddleware');
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRATION = process.env.JWT_EXPIRATION || '1h';
 
+// Rutas de autenticación 
 router.post('/register', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -24,6 +25,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
+// Ruta de login
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
   try {

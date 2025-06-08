@@ -1,6 +1,7 @@
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 
+// Componente para el editor de código
 function CodeEditor({ code, setCode, handleAnalyze, loading }) {
   return (
     <div className="code-panel">

@@ -64,13 +64,14 @@ async function runSonarScanner(projectKey, code, language) {
     throw new Error('Faltan parámetros necesarios: projectKey, code y language son obligatorios');
   }
 
-  const baseDir = path.resolve(__dirname, '..', 'tasks');
-  const projectDir = path.join(baseDir, projectKey);
+  const baseDir = path.resolve(__dirname, '..', 'tasks'); // Define el directorio base para los proyectos
+  const projectDir = path.join(baseDir, projectKey); // Define el directorio del proyecto basado en su clave
 
-  fs.mkdirSync(projectDir, { recursive: true });
+  fs.mkdirSync(projectDir, { recursive: true }); // Crea el directorio del proyecto si no existe
 
-  fs.writeFileSync(path.join(projectDir, 'source_code_' + projectKey + '.' + language), code);
+  fs.writeFileSync(path.join(projectDir, 'source_code_' + projectKey + '.' + language), code); // Guarda el código fuente en un archivo
 
+  // Crea el archivo de configuración sonar-project.properties
   const sonarProperties = `
   sonar.projectKey=${projectKey}
   sonar.sources=.
@@ -78,17 +79,20 @@ async function runSonarScanner(projectKey, code, language) {
   sonar.login=${SONARQUBE_TOKEN}
   `.trim();
 
+  // Escribe las propiedades de SonarQube en el archivo sonar-project.properties
   fs.writeFileSync(path.join(projectDir, 'sonar-project.properties'), sonarProperties);
 
+  // Configura el comando para ejecutar Sonar Scanner
   const command = `sonar-scanner -Dsonar.projectBaseDir=${projectDir}`;
   try {
+    // Ejecuta el comando de Sonar Scanner
     const execResult = new Promise((resolve, reject) => {
       exec(command, (error, stdout, stderr) => {
         console.log('STDOUT:\n', stdout);
         console.error('STDERR:\n', stderr);
-
         try {
-          fs.rmSync(projectDir, { recursive: true, force: true });
+          // Limpia el directorio del proyecto después de ejecutar Sonar Scanner
+          fs.rmSync(projectDir, { recursive: true, force: true }); 
         } catch (cleanupError) {
           console.warn('Error al eliminar el directorio temporal:', cleanupError.message);
         }
@@ -101,16 +105,17 @@ async function runSonarScanner(projectKey, code, language) {
       });
     });
     const result = await execResult;
-    console.log('Análisis completado:', result);
     if (!result) {
       throw new Error('No se obtuvo resultado del análisis de Sonar Scanner');
     }
+    // Espera a que SonarQube complete el análisis
     await waitForAnalysisCompletion(projectKey);
   }
   catch (err) {
     console.error('Error ejecutando Sonar Scanner:', err.message);
     throw new Error('Error al ejecutar Sonar Scanner');
   }
+  // Obtiene los resultados del análisis
   return await getAnalysisResults(projectKey);
 }
 
@@ -131,6 +136,7 @@ async function getSolutionForIssue(ruleKey) {
 // Espera a que SonarQube complete el análisis del proyecto
 async function waitForAnalysisCompletion(projectKey, timeoutMs = 10000, intervalMs = 1000) {
   const startTime = Date.now();
+  // Mientras el tiempo transcurrido sea menor que el timeout
   while (Date.now() - startTime < timeoutMs) {
     try {
       const res = await axios.get(`${SONARQUBE_URL}/api/ce/component?component=${projectKey}`, {
@@ -163,7 +169,7 @@ async function getAnalysisResults(projectKey) {
   if (res.status !== 200) {
     throw new Error('Error al obtener resultados del análisis');
   }
-  
+
   const issues = res.data.issues.filter(issue => issue.component.startsWith(`${projectKey}:`));
 
   const uniqueRuleKeys = [...new Set(issues.map(issue => issue.rule))];

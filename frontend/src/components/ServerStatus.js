@@ -1,3 +1,4 @@
+// Componente para mostrar el estado del servidor SonarQube
 function ServerStatus({ status }) {
   return (
     status && (

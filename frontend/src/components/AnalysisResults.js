@@ -1,4 +1,5 @@
 import '../styles/AnalysisResults.css';
+import IssueSolutionModal from './IssueSolutionModal';
 
 const getSeverityColor = (severity) => {
   const colors = {
@@ -32,6 +33,7 @@ const getSeverityPriority = (severity) => {
   return priorities[severity] || 0;
 };
 
+// Componente para mostrar los resultados del análisis de código
 export default function AnalysisResults({ issues }) {
   if (!Array.isArray(issues) || issues.length === 0) {
     return (
@@ -114,7 +116,7 @@ export default function AnalysisResults({ issues }) {
                   <th>Etiquetas</th>
                   <th>Ubicación</th>
                   <th>Esfuerzo</th>
-                  <th>Solución</th> {/* nueva columna */}
+                  <th>Solución</th>
                 </tr>
               </thead>
               <tbody>
@@ -144,9 +146,13 @@ export default function AnalysisResults({ issues }) {
                     </td>
                     <td>
                       <div className="issue-tags">
-                        {issue.tags && issue.tags.map((tag, index) => (
-                          <span key={index} className="issue-tag">{tag}</span>
-                        ))}
+                        {issue.tags && issue.tags.length > 0 && (
+                          <ul className="issue-tag-list">
+                            {issue.tags.map((tag, index) => (
+                              <li key={index} className="issue-tag-item">{tag}</li>
+                            ))}
+                          </ul>
+                        )}
                       </div>
                     </td>
                     <td>
@@ -166,13 +172,7 @@ export default function AnalysisResults({ issues }) {
                       <span className="issue-effort">{issue.effort || issue.debt}</span>
                     </td>
                     <td>
-                      <details className="issue-solution">
-                        <summary>Ver guía</summary>
-                        <div
-                          className="solution-content"
-                          dangerouslySetInnerHTML={{ __html: issue.solutionHtml }}
-                        />
-                      </details>
+                      <IssueSolutionModal issue={issue} />
                     </td>
                   </tr>
                 ))}

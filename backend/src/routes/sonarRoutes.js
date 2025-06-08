@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.use(verifyToken);
 
+// Ruta para verificar el estado de SonarQube
 router.get('/status', async (req, res) => {
   try {
     const response = await axios.get(`${process.env.SONARQUBE_URL}/api/system/status`);
@@ -16,6 +17,7 @@ router.get('/status', async (req, res) => {
   }
 });
 
+// Ruta para analizar código y guardar resultados
 router.post('/analyze', async (req, res) => {
   const { projectKey, code, language } = req.body;
   const token = req.headers.authorization?.split(' ')[1];
@@ -40,6 +42,7 @@ router.post('/analyze', async (req, res) => {
   }
 });
 
+// Ruta para obtener lenguajes soportados por SonarQube
 router.get('/languages', async (req, res) => {
   try {
     const response = await getSupportedLanguages();

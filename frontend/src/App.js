@@ -4,9 +4,7 @@ import CodeEditor from './components/CodeEditor';
 import ConfigPanel from './components/ConfigPanel';
 import AnalysisResults from './components/AnalysisResults';
 import ServerStatus from './components/ServerStatus';
-import {
-  checkServerStatus, fetchExistingProjects, sendAnalysisRequest, validateToken, deleteProject, getAnalysisResultsForProject
-} from './services/api';
+import { checkServerStatus, fetchExistingProjects, sendAnalysisRequest, validateToken, deleteProject, getAnalysisResultsForProject } from './services/api';
 import LoginForm from './components/LoginForm';
 import './styles/App.css';
 
@@ -71,7 +69,7 @@ function App() {
     const intervalId = setInterval(fetchStatus, 60 * 1000); // cada 60 segundos
     return () => clearInterval(intervalId);
   }, [token]);
-  
+
   if (!token) {
     return <LoginForm onLogin={handleLogin} />;
   }
@@ -136,7 +134,9 @@ function App() {
   return (
     <div className="App">
       <header className="app-header">
-        <h1 className='app-title'>Analizador de Código con SonarQube</h1>
+        <div className="logo-container">
+          <h1 className='app-title'>VulnScannerPlatform</h1>
+        </div>
         <ServerStatus status={serverStatus} />
       </header>
 

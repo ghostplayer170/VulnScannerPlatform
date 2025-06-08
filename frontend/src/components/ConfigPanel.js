@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getSupportedLanguages } from '../services/api';
 
+// Componente para la configuración del proyecto
 function ConfigPanel({
   projectKey,
   setProjectKey,
@@ -102,7 +103,7 @@ function ConfigPanel({
       )}
 
       {existingProjects.length > 0 && projectKey && (
-        <div className="form-group">
+        <div className="form-group-delete-btn">
           <button
             className="delete-project-btn"
             onClick={() => { handleDeleteProject(projectKey); console.log(`Proyecto ${projectKey} eliminado`); }}

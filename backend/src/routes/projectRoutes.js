@@ -7,6 +7,8 @@ const Analysis = require('../models/Analysis');
 
 router.use(verifyToken);
 
+// Rutas de proyectos 
+
 /**
  * POST /projects
  * Crea un nuevo proyecto en SonarQube y lo guarda en MongoDB
