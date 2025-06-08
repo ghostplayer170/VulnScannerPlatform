@@ -46,7 +46,7 @@ Plataforma web que integra **SonarQube**, un backend en **Node.js/Express** y un
    SONARQUBE_PASS=<password>
    BACKEND_URL=http://localhost:5000
    ```
-   ***Nota:
+   ***Nota***:
    Para las claves [SONARQUBE_TOKEN, SONARQUBE_USER, SONARQUBE_PASS], se debe seguir la guia de [Sonarqube: Managing your tokens](https://docs.sonarsource.com/sonarqube-server/latest/user-guide/managing-tokens/).
    Se debe acceder al sevidor mediante [SONARQUBE_UR](http://sonarqube:9000), crear una cuenta de servicio y asignarlo al grupo de administradores y generar un token global.
 
