@@ -22,7 +22,7 @@ Plataforma web que integra **SonarQube**, un backend en **Node.js/Express** y un
 
 - [Docker](https://www.docker.com/) instalados.
 
-## Configuracion
+## Configuración
 
 1. **Clonar el repositorio**
 
